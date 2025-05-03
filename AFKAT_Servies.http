@@ -1,0 +1,6 @@
+@AFKAT_Servies_HostAddress = http://localhost:5249
+
+GET {{AFKAT_Servies_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
