@@ -6,10 +6,13 @@ using Supabase.Postgrest.Models;
 namespace AFKAT_Servies
 {
 	[Keyless]
-    public class LeaderboardEntries : BaseModel
+	public class LeaderboardEntries : BaseModel
 	{
 		[Required]
+		[Supabase.Postgrest.Attributes.PrimaryKey()]
 		public int Id { get; set; }
+		[Required]
+		public int PlayerId { get; set; }
 		[Required]
 		public int LeaderboardId { get; set; }
 		[Required]
@@ -18,5 +21,7 @@ namespace AFKAT_Servies
 		public int Score { get; set; }
 		[Required]
 		public DateTime CreatedAt { get; set; }
+		[Required]
+		public DateTime UpdatedAt { get; set; }
 	}
 }

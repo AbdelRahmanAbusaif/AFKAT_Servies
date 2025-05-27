@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using Supabase;
-using System.Text;
-using Jose;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,7 +77,6 @@ options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
 
 
 var app = builder.Build();
-
 
 app.UseSwagger();
 app.UseSwaggerUI();

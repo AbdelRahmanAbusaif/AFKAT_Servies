@@ -4,10 +4,10 @@ using Supabase.Postgrest.Models;
 
 namespace AFKAT_Servies
 {
+	[Microsoft.EntityFrameworkCore.Keyless]
     public class Achivements : BaseModel
-    {
+	{
 		[Required]
-		[PrimaryKey]
 		public int Id { get; set; }
 		[Required]
 		public int GameId { get; set; }

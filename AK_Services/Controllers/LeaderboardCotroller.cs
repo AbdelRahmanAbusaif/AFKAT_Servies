@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AFKAT_Servies.Controllers
@@ -12,7 +10,7 @@ namespace AFKAT_Servies.Controllers
         private readonly Supabase.Client _supabaseClient = client;
 
         [HttpGet]
-        [Route("afk_leaderboard/get_leaderboardById/{leaderboardId}")]
+        [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult GetLeaderboard(int leaderboardId)
         {
             if (leaderboardId <= 0)
@@ -43,8 +41,8 @@ namespace AFKAT_Servies.Controllers
             );
         }
         [HttpGet]
-        [Route("afk_leaderboard/get_all_leaderboards")]
-        public IActionResult GetLeaderboards()
+        [Route("afk_leaderboard")]
+        public IActionResult GetLeaderboards(int page = 1, int pageSize = 20)
         {
             var respose = _supabaseClient.From<Leaderboards>().
                 Select("*")
@@ -54,6 +52,15 @@ namespace AFKAT_Servies.Controllers
             {
                 return NotFound("No leaderboards found.");
             }
+
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 20;
+
+            var pagedModels = respose.Result.Models
+                .OrderBy(x => x.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             List<LeaderboardDTO> leaderboards = respose.Result.Models.Select(x => new LeaderboardDTO
             {
@@ -68,11 +75,17 @@ namespace AFKAT_Servies.Controllers
             }
 
             return Ok(
-                leaderboards
+                new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = respose.Result.Models.Count,
+                    Leaderboards = leaderboards
+                }
             );
         }
         [HttpPost]
-        [Route("afk_leaderboard/create_leaderboard")]
+        [Route("afk_leaderboard")]
         public IActionResult CreateLeaderboard([FromBody] LeaderboardDTO leaderboardDto)
         {
             if (leaderboardDto == null || string.IsNullOrEmpty(leaderboardDto.LeaderboardName) || leaderboardDto.GameId <= 0)
@@ -97,7 +110,7 @@ namespace AFKAT_Servies.Controllers
             return CreatedAtAction(nameof(GetLeaderboard), new { leaderboardId = response.Result.Model.Id }, response.Result.Model);
         }
         [HttpPut]
-        [Route("afk_leaderboard/update_leaderboard/{leaderboardId}")]
+        [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult UpdateLeaderboard(int leaderboardId, [FromBody] LeaderboardDTO leaderboardDto)
         {
             if (leaderboardId <= 0 || leaderboardDto == null || string.IsNullOrEmpty(leaderboardDto.LeaderboardName) || leaderboardDto.GameId <= 0)
@@ -129,7 +142,7 @@ namespace AFKAT_Servies.Controllers
             return Ok(updateResponse.Result.Model);
         }
         [HttpDelete]
-        [Route("afk_leaderboard/delete_leaderboard/{leaderboardId}")]
+        [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult DeleteLeaderboard(int leaderboardId)
         {
             if (leaderboardId <= 0)
