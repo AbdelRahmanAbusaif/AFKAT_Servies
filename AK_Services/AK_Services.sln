@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFKAT_Servies", "AFKAT_Servies.csproj", "{AC7EE7DC-8EC0-4CC7-8A34-B6429B9D0A1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AK_Services", "AK_Services.csproj", "{A0048BAA-52B4-4D32-A823-93F589AFB54F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC7EE7DC-8EC0-4CC7-8A34-B6429B9D0A1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC7EE7DC-8EC0-4CC7-8A34-B6429B9D0A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC7EE7DC-8EC0-4CC7-8A34-B6429B9D0A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC7EE7DC-8EC0-4CC7-8A34-B6429B9D0A1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0048BAA-52B4-4D32-A823-93F589AFB54F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0048BAA-52B4-4D32-A823-93F589AFB54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0048BAA-52B4-4D32-A823-93F589AFB54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0048BAA-52B4-4D32-A823-93F589AFB54F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {84309DDC-FBED-4B44-AE52-500F8537CCD6}
+		SolutionGuid = {9BBE118A-69A0-40F2-8303-1977038AA932}
 	EndGlobalSection
 EndGlobal

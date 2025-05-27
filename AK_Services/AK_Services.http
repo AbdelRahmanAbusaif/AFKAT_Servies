@@ -1,0 +1,6 @@
+@AK_Services_HostAddress = http://localhost:5167
+
+GET {{AK_Services_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

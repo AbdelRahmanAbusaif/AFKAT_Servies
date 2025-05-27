@@ -1,0 +1,5 @@
+{
+    "appService.preDeployTask": "publish-release",
+    "appService.deploySubpath": "bin\\Release\\net8.0\\publish",
+    "appService.defaultWebAppToDeploy": "/subscriptions/4748672e-8381-4536-8e02-f9e2dd8e0042/resourceGroups/afkat/providers/Microsoft.Web/sites/afkatservice"
+}
