@@ -1,14 +1,14 @@
-using AK_Services.Services;
+using AK_Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AFKAT_Servies.Controllers
 {
     [ApiController]
     [Route("afk_services")]
-    public class LeaderboardController(ILogger<LeaderboardController> logger, UnitOfWork unitOfWork) : ControllerBase
+    public class LeaderboardController(ILogger<LeaderboardController> logger, IUnitOfWork unitOfWork) : ControllerBase
     {
         private readonly ILogger<LeaderboardController> _logger = logger;
-        private readonly UnitOfWork _unitOfWork = unitOfWork;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         [HttpGet]
         [Route("afk_leaderboard/{leaderboardId}")]

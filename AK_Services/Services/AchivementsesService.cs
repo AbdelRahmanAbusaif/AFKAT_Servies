@@ -4,7 +4,7 @@ using Supabase;
 
 namespace AK_Services.Services;
 
-public class AchivementsService(Client client) : IAchivementService
+public class AchivementsService(Client client) : IAchivementsService
 {
     private readonly Client _supabaseClient = client;
     public Task<List<AchivementsDTO>> GetAchivementsAsync(int gameId, int page = 1, int pageSize = 10)

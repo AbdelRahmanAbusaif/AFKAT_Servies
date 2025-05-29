@@ -6,7 +6,7 @@ namespace AK_Services.Services;
 
 public class UnitOfWork : IUnitOfWork
 {
-    public IAchivementService Achivements { get; }
+    public IAchivementsService Achivementses { get; }
     public ILeaderboardService Leaderboards { get; }
     public ILeaderboardEntriesService LeaderboardEntries { get; }
     
@@ -17,7 +17,7 @@ public class UnitOfWork : IUnitOfWork
         _supabaseClient = client;
 
         LeaderboardEntries = new LeaderboardEntriesService(_supabaseClient);
-        Achivements = new AchivementsService(_supabaseClient);
+        Achivementses = new AchivementsService(_supabaseClient);
         Leaderboards = new LeaderboardService(_supabaseClient);
     }
     
