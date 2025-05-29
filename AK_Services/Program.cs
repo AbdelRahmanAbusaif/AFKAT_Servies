@@ -1,3 +1,5 @@
+using AK_Services.Interfaces;
+using AK_Services.Services;
 using Microsoft.EntityFrameworkCore;
 using Supabase;
 
@@ -56,6 +58,9 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // 						}
 // 					};
 // 				});
+
+// Register UnitOfWork and services
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Supabase client
 builder.Services.AddScoped<Supabase.Client>(_ =>
