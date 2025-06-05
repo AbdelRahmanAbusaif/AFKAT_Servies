@@ -6,4 +6,5 @@ public interface IUnitOfWork
     public ILeaderboardService Leaderboards { get; }
     public ILeaderboardEntriesService LeaderboardEntries { get; }
     public IPlayerAchievementService PlayerAchievements { get; }
+    public IPlayerSaves PlayerSaves { get; }
 }

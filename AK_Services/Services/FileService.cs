@@ -7,7 +7,7 @@ public class FileService(string conncetionString) : IFileService
 {
     private string containerName = "save-files";
     private string _connectionString = conncetionString;
-    public Task<string> SaveFileAsync(IFormFile file)
+    public Task<string> SaveFileAsync(IFormFile file , string? path = null)
     {
         if (string.IsNullOrEmpty(_connectionString))
         {
@@ -18,7 +18,18 @@ public class FileService(string conncetionString) : IFileService
         {
             containerClient.Create();
         }
-        string fileName = $"{Guid.NewGuid()}_{file.FileName}";
+
+        string fileName; 
+        
+        if(String.IsNullOrEmpty(path))
+        {
+            fileName= $"{Guid.NewGuid()}_{file.FileName}";
+        }
+        else
+        {
+            fileName = $"{path}/{file.FileName.ToLower()}";
+        }
+        
         BlobClient blobClient = containerClient.GetBlobClient(fileName);
         using (var stream = file.OpenReadStream())
         {

@@ -10,6 +10,7 @@ public class UnitOfWork : IUnitOfWork
     public ILeaderboardService Leaderboards { get; }
     public ILeaderboardEntriesService LeaderboardEntries { get; }
     public IPlayerAchievementService PlayerAchievements { get; }
+    public IPlayerSaves PlayerSaves { get; }
     
     private readonly Client _supabaseClient;
     private readonly IFileService _fileService;
@@ -23,6 +24,7 @@ public class UnitOfWork : IUnitOfWork
         Achivementses = new AchivementsService(_supabaseClient, _fileService);
         Leaderboards = new LeaderboardService(_supabaseClient);
         PlayerAchievements = new PlayerAchievementService(_supabaseClient, _fileService);
+        PlayerSaves = new PlayerSavesService(_supabaseClient, _fileService);
     }
     
 }

@@ -101,7 +101,7 @@ namespace AFKAT_Servies.Controllers
             }
         }
         [HttpPost]
-        [Route("afk_leaderboard_entries/AddScore/{leaderboardId}/{userId}")]
+        [Route("afk_leaderboard_entries/{leaderboardId}/{userId}")]
         public IActionResult AddScore(int leaderboardId, int userId, [FromBody] int scoreToAdd)
         {
             try

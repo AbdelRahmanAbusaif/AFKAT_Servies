@@ -131,7 +131,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
         {
             throw new ArgumentException($"No achivement found with ID {achivement.Id}.");
         }
-
+        
         if (file != null && (file.ContentType != "image/png" && file.ContentType != "image/jpeg"))
         {
             throw new ArgumentException("Invalid file type. Only PNG and JPEG are allowed.", nameof(file));
@@ -142,6 +142,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
 
         if (file != null)
         {
+            fileService.DeleteFileAsync(existingAchivement.Result.Model.AchivementIconURL);
             existingAchivement.Result.Model.AchivementIconURL = _fileService.SaveFileAsync(file).Result;
         }
 
@@ -185,6 +186,8 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             .Where(x => x.Id == id)
             .Delete();
 
+        fileService.DeleteFileAsync(existingAchivement.Result.Model.AchivementIconURL).Wait();
+        
         return Task.FromResult(true);
     }
     
