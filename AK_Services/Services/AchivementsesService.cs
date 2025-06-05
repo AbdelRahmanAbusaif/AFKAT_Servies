@@ -19,7 +19,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
         if(page <= 0) page = 1;
         if (pageSize <= 0) pageSize = 10;
         
-        var response = _supabaseClient.From<Achivements>()
+        var response = _supabaseClient.From<Achievements>()
             .Select("*")
             .Where(x => x.GameId == gameId)
             .Get();
@@ -53,7 +53,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             throw new ArgumentException("Invalid game ID", nameof(gameId));
         }
 
-        var response = _supabaseClient.From<Achivements>()
+        var response = _supabaseClient.From<Achievements>()
             .Select("*")
             .Where(x => x.GameId == gameId)
             .Get();
@@ -75,7 +75,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
         return Task.FromResult(achivement);
     }
 
-    public Task<AchivementsDTO> CreateAchivementAsync([FromBody]AchivementsDTO achivement,[FromForm] IFormFile file)
+    public Task<AchivementsDTO> CreateAchivementAsync(AchivementsDTO achivement, IFormFile file)
     {
         if (achivement == null)
         {
@@ -87,14 +87,16 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             throw new ArgumentException("Invalid file type. Only PNG and JPEG are allowed.", nameof(file));
         }
         
-        var response = _supabaseClient.From<Achivements>()
-            .Insert(new Achivements
-            {
-                GameId = achivement.GameId,
-                AchivementName = achivement.Name,
-                AchivementDescription = achivement.Description,
-                AchivementIconURL = _fileService.SaveFileAsync(file).Result // Assuming you handle file upload separately
-            });
+        var achivementModel = new Achievements
+        {
+            GameId = achivement.GameId,
+            AchivementName = achivement.Name,
+            AchivementDescription = achivement.Description,
+            AchivementIconURL = _fileService.SaveFileAsync(file).Result
+        };
+        
+        var response = _supabaseClient.From<Achievements>()
+            .Insert(achivementModel);
 
         if (response.Result.Model == null)
         {
@@ -107,7 +109,8 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             GameId = response.Result.Model.GameId,
             Name = response.Result.Model.AchivementName,
             Description = response.Result.Model.AchivementDescription,
-            ImageUrl = response.Result.Model.AchivementIconURL
+            ImageUrl = response.Result.Model.AchivementIconURL,
+            Image = file
         };
 
         return Task.FromResult(createdAchivement);
@@ -119,7 +122,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             throw new ArgumentNullException(nameof(achivement), "Achivement cannot be null.");
         }
 
-        var existingAchivement = _supabaseClient.From<Achivements>()
+        var existingAchivement = _supabaseClient.From<Achievements>()
             .Select("*")
             .Where(x => x.Id == achivement.Id)
             .Get();
@@ -142,7 +145,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             existingAchivement.Result.Model.AchivementIconURL = _fileService.SaveFileAsync(file).Result;
         }
 
-        var updateResponse = _supabaseClient.From<Achivements>()
+        var updateResponse = _supabaseClient.From<Achievements>()
             .Update(existingAchivement.Result.Model);
 
         if (updateResponse.Result.Model == null)
@@ -168,7 +171,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             throw new ArgumentException("Invalid achivement ID", nameof(id));
         }
         
-        var existingAchivement = _supabaseClient.From<Achivements>()
+        var existingAchivement = _supabaseClient.From<Achievements>()
             .Select("*")
             .Where(x => x.Id == id)
             .Get();
@@ -178,7 +181,7 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
             throw new KeyNotFoundException($"No achivement found with ID {id}.");
         }
         
-        var response = _supabaseClient.From<Achivements>()
+        var response = _supabaseClient.From<Achievements>()
             .Where(x => x.Id == id)
             .Delete();
 

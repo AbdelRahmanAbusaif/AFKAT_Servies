@@ -5,8 +5,8 @@ namespace AFKAT_Servies.Controllers
 {
 
     [ApiController]
-    [Route("afk_services/afk_achivements")]
-    public class AchivementsController(ILogger<LeaderboardController> logger, IUnitOfWork unitOfWork) : ControllerBase
+    [Route("afk_services/afk_achievements")]
+    public class AchievementsController(ILogger<LeaderboardController> logger, IUnitOfWork unitOfWork) : ControllerBase
     {
         private readonly ILogger<LeaderboardController> _logger = logger;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;

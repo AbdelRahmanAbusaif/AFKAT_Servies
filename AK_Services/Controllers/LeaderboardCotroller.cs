@@ -119,10 +119,6 @@ namespace AFKAT_Servies.Controllers
             try
             {
                 var response = _unitOfWork.Leaderboards.CreateLeaderboardAsync(leaderboardDto);
-                if (response == null)
-                {
-                    return BadRequest("Failed to create leaderboard.");
-                }
                 return CreatedAtAction(nameof(GetLeaderboard), new { leaderboardId = response.Result.Id }, response.Result);
             }
             catch (InvalidOperationException e)
@@ -147,6 +143,7 @@ namespace AFKAT_Servies.Controllers
                 {
                     return NotFound("Leaderboard not found or update failed.");
                 }
+                return NoContent();
             }
             catch (ArgumentException e)
             {
@@ -163,8 +160,6 @@ namespace AFKAT_Servies.Controllers
                 _logger.LogError(e, "An error occurred while updating leaderboard");
                 return StatusCode(500, "Internal server error: " + e.Message);
             }
-            
-            return NoContent();
         }
         [HttpDelete]
         [Route("afk_leaderboard/{leaderboardId}")]
@@ -173,11 +168,6 @@ namespace AFKAT_Servies.Controllers
             try
             {
                 var response = _unitOfWork.Leaderboards.DeleteLeaderboardAsync(leaderboardId);
-                if (response == null)
-                {
-                    return NotFound($"Leaderboard with ID {leaderboardId} not found.");
-                }
-                
                 return NoContent();
             }
             catch (ArgumentException e)

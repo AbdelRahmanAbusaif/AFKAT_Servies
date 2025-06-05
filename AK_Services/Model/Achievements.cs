@@ -5,7 +5,7 @@ using Supabase.Postgrest.Models;
 namespace AFKAT_Servies
 {
 	[Microsoft.EntityFrameworkCore.Keyless]
-    public class Achivements : BaseModel
+    public class Achievements : BaseModel
 	{
 		[Required]
 		[Supabase.Postgrest.Attributes.PrimaryKey("Id", false)]

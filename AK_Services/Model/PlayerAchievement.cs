@@ -5,17 +5,20 @@ using Supabase.Postgrest.Models;
 namespace AFKAT_Servies
 {
 	[Microsoft.EntityFrameworkCore.Keyless]
-    public class PlayerAchivement : BaseModel
+    public class PlayerAchievement : BaseModel
 	{
 		[Required]
+		[Supabase.Postgrest.Attributes.PrimaryKey("Id", false)]
 		public int Id { get; set; }
+		[Required]
+		public int AchievementId { get; set; }
 		[Required]
 		public int GameId { get; set; }
 		[Required]
 		public int PlayerId { get; set; }
 		[Required]
-		public DateTime UnloackedAt { get; set; }
+		public DateTime UnlockedAt { get; set; }
 		[Required]
-		public string AchivementIconURL { get; set; }
+		public string AchievementIconURL { get; set; }
 	}
 }
