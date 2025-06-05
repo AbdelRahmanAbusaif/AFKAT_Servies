@@ -83,7 +83,7 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
             Where(x => x.LeaderboardId == leaderboardId)
             .Get();
         
-        if (allEntriesResponse.Result.Models != null)
+        if (allEntriesResponse.Result.Models.Any())
         {
             var allEntries = allEntriesResponse.Result.Models
                 .OrderByDescending(x => x.Score)
@@ -218,7 +218,7 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
         return Task.FromResult(updateResponse.Result.Model);
     }
 
-    public Task<bool> DeleteLeaderboardEntryAsync(int leaderboardId, int userId)
+    public Task DeleteLeaderboardEntryAsync(int leaderboardId, int userId)
     {
         if (leaderboardId <= 0)
         {
@@ -243,16 +243,11 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
         var deleteResponse = _supabaseClient.From<LeaderboardEntries>()
             .Where(x=> x.LeaderboardId == leaderboardId && x.PlayerId == userId)
             .Delete();
-
-        if (deleteResponse == null)
-        {
-            return Task.FromResult(false);
-        }
         
         return Task.FromResult(true);
     }
 
-    public Task<bool> DeleteLeaderboardEntriesAsync(int leaderboardId)
+    public Task DeleteLeaderboardEntriesAsync(int leaderboardId)
     {
         if(leaderboardId <= 0)
         {
@@ -272,11 +267,6 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
         var deleteResponse = _supabaseClient.From<LeaderboardEntries>()
             .Where(x => x.LeaderboardId == leaderboardId)
             .Delete();
-
-        if (deleteResponse == null)
-        {
-            return Task.FromResult(false);
-        }
         
         return Task.FromResult(true);
     }

@@ -1,12 +1,14 @@
 ﻿using AFKAT_Servies;
 using AK_Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Supabase;
 
 namespace AK_Services.Services;
 
-public class AchivementsService(Client client) : IAchivementsService
+public class AchivementsService(Client client,IFileService fileService) : IAchivementsService
 {
     private readonly Client _supabaseClient = client;
+    private readonly IFileService _fileService = fileService;
     public Task<List<AchivementsDTO>> GetAchivementsAsync(int gameId, int page = 1, int pageSize = 10)
     {
         if(gameId <= 0)
@@ -72,4 +74,115 @@ public class AchivementsService(Client client) : IAchivementsService
 
         return Task.FromResult(achivement);
     }
+
+    public Task<AchivementsDTO> CreateAchivementAsync([FromBody]AchivementsDTO achivement,[FromForm] IFormFile file)
+    {
+        if (achivement == null)
+        {
+            throw new ArgumentNullException(nameof(achivement), "Achivement cannot be null.");
+        }
+
+        if (file == null || (file.ContentType != "image/png" && file.ContentType != "image/jpeg"))
+        {
+            throw new ArgumentException("Invalid file type. Only PNG and JPEG are allowed.", nameof(file));
+        }
+        
+        var response = _supabaseClient.From<Achivements>()
+            .Insert(new Achivements
+            {
+                GameId = achivement.GameId,
+                AchivementName = achivement.Name,
+                AchivementDescription = achivement.Description,
+                AchivementIconURL = _fileService.SaveFileAsync(file).Result // Assuming you handle file upload separately
+            });
+
+        if (response.Result.Model == null)
+        {
+            throw new InvalidOperationException("Failed to create achivement.");
+        }
+
+        AchivementsDTO createdAchivement = new()
+        {
+            Id = response.Result.Model.Id,
+            GameId = response.Result.Model.GameId,
+            Name = response.Result.Model.AchivementName,
+            Description = response.Result.Model.AchivementDescription,
+            ImageUrl = response.Result.Model.AchivementIconURL
+        };
+
+        return Task.FromResult(createdAchivement);
+    }
+    public Task<AchivementsDTO> UpdateAchivementAsync(AchivementsDTO achivement, IFormFile? file = null)
+    {
+        if (achivement == null)
+        {
+            throw new ArgumentNullException(nameof(achivement), "Achivement cannot be null.");
+        }
+
+        var existingAchivement = _supabaseClient.From<Achivements>()
+            .Select("*")
+            .Where(x => x.Id == achivement.Id)
+            .Get();
+
+        if (existingAchivement.Result.Model == null)
+        {
+            throw new ArgumentException($"No achivement found with ID {achivement.Id}.");
+        }
+
+        if (file != null && (file.ContentType != "image/png" && file.ContentType != "image/jpeg"))
+        {
+            throw new ArgumentException("Invalid file type. Only PNG and JPEG are allowed.", nameof(file));
+        }
+
+        existingAchivement.Result.Model.AchivementName = achivement.Name;
+        existingAchivement.Result.Model.AchivementDescription = achivement.Description;
+
+        if (file != null)
+        {
+            existingAchivement.Result.Model.AchivementIconURL = _fileService.SaveFileAsync(file).Result;
+        }
+
+        var updateResponse = _supabaseClient.From<Achivements>()
+            .Update(existingAchivement.Result.Model);
+
+        if (updateResponse.Result.Model == null)
+        {
+            throw new InvalidOperationException("Failed to update achivement.");
+        }
+
+        AchivementsDTO updatedAchivement = new()
+        {
+            Id = updateResponse.Result.Model.Id,
+            GameId = updateResponse.Result.Model.GameId,
+            Name = updateResponse.Result.Model.AchivementName,
+            Description = updateResponse.Result.Model.AchivementDescription,
+            ImageUrl = updateResponse.Result.Model.AchivementIconURL
+        };
+
+        return Task.FromResult(updatedAchivement);
+    }
+    public Task DeleteAchivementAsync(int id)
+    {
+        if (id <= 0)
+        {
+            throw new ArgumentException("Invalid achivement ID", nameof(id));
+        }
+        
+        var existingAchivement = _supabaseClient.From<Achivements>()
+            .Select("*")
+            .Where(x => x.Id == id)
+            .Get();
+        
+        if (existingAchivement.Result.Model == null)
+        {
+            throw new KeyNotFoundException($"No achivement found with ID {id}.");
+        }
+        
+        var response = _supabaseClient.From<Achivements>()
+            .Where(x => x.Id == id)
+            .Delete();
+
+        return Task.FromResult(true);
+    }
+    
 }

@@ -16,7 +16,7 @@ public class LeaderboardService(Client client) : ILeaderboardService
 
         if (response.Result.Models == null || !response.Result.Models.Any())
         {
-            throw new ArgumentException("No leaderboards found.");
+            throw new KeyNotFoundException("No leaderboards found.");
         }
         if (page <= 0) page = 1;
         if (pageSize <= 0) pageSize = 10;
@@ -26,6 +26,11 @@ public class LeaderboardService(Client client) : ILeaderboardService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
+
+        if (!pagedModels.Any())
+        {
+            throw new KeyNotFoundException($"No leaderboards found for page {page} with page size {pageSize}.");
+        }
         
         List<LeaderboardDTO> leaderboards = pagedModels.Select(x => new LeaderboardDTO
         {
@@ -51,7 +56,7 @@ public class LeaderboardService(Client client) : ILeaderboardService
 
         if (response.Result.Models == null || !response.Result.Models.Any())
         {
-            throw new ArgumentException($"Leaderboard with ID {leadbaordId} not found.");
+            throw new KeyNotFoundException($"Leaderboard with ID {leadbaordId} not found.");
         }
 
         var leaderboard = response.Result.Model;
@@ -70,7 +75,7 @@ public class LeaderboardService(Client client) : ILeaderboardService
         {
             throw new ArgumentException("Game ID must be greater than zero.");
         }
-
+        
         var response = _supabaseClient.From<Leaderboards>()
             .Select("*")
             .Where(x => x.GameId == gameId)
@@ -78,7 +83,7 @@ public class LeaderboardService(Client client) : ILeaderboardService
 
         if (response.Result.Models == null || !response.Result.Models.Any())
         {
-            throw new ArgumentException($"No leaderboards found for game ID {gameId}.");
+            throw new KeyNotFoundException($"No leaderboards found for game ID {gameId}.");
         }
 
         if (page <= 0) page = 1;
@@ -90,6 +95,11 @@ public class LeaderboardService(Client client) : ILeaderboardService
             .Take(pageSize)
             .ToList();
 
+        if (!pagedModels.Any())
+        {
+            throw new KeyNotFoundException($"No leaderboards found for game ID {gameId} on page {page} with page size {pageSize}.");
+        }
+        
         List<LeaderboardDTO> leaderboards = pagedModels.Select(x => new LeaderboardDTO
         {
             Id = x.Id,
@@ -102,11 +112,6 @@ public class LeaderboardService(Client client) : ILeaderboardService
 
     public Task<LeaderboardDTO> CreateLeaderboardAsync(LeaderboardDTO leaderboard)
     {
-        if(leaderboard.Id <= 0)
-        {
-            throw new ArgumentException("Invalid leaderboard data.");
-        }
-        
         var response = _supabaseClient.From<Leaderboards>()
             .Insert(new Leaderboards
             {
@@ -172,14 +177,20 @@ public class LeaderboardService(Client client) : ILeaderboardService
         {
             throw new ArgumentException("Leaderboard ID must be greater than zero.");
         }
-
-        var response = _supabaseClient.From<Leaderboards>()
-            .Delete();
-
-        if (response == null)
+        
+        var existingLeaderboard = _supabaseClient.From<Leaderboards>()
+            .Select("*")
+            .Where(x => x.Id == id)
+            .Get();
+        
+        if (existingLeaderboard.Result.Model == null)
         {
-            return Task.FromResult(false);
+            throw new KeyNotFoundException($"No leaderboard found with ID {id}.");
         }
+        
+        var response = _supabaseClient.From<Leaderboards>()
+            .Where(x => x.Id == id)
+            .Delete();
         
         return Task.FromResult(true);
     }

@@ -62,6 +62,10 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // Register UnitOfWork and services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Register FileService
+builder.Services.AddScoped<IFileService, FileService>(x=>
+	new FileService(builder.Configuration["AzureStorageConnectionString"]));
+
 // Register Supabase client
 builder.Services.AddScoped<Supabase.Client>(_ =>
 	new Supabase.Client(

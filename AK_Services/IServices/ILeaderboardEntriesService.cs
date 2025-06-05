@@ -9,6 +9,6 @@ public interface ILeaderboardEntriesService
     public Task<LeaderboardEntries?> CreateLeaderboardEntryAsync(int leaderboardId, LeaderboardEntryDTO entry);
     public Task<LeaderboardEntries?> AddScoreToLeaderboardAsync(int leaderboardId, int userId, int score);
     public Task<LeaderboardEntries?> UpdateLeaderboardEntryAsync(int leaderboardId, LeaderboardEntryDTO entry);
-    public Task<bool> DeleteLeaderboardEntryAsync(int leaderboardId, int userId);
-    public Task<bool> DeleteLeaderboardEntriesAsync(int leaderboardId);
+    public Task DeleteLeaderboardEntryAsync(int leaderboardId, int userId);
+    public Task DeleteLeaderboardEntriesAsync(int leaderboardId);
 }

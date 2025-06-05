@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AFKAT_Servies.Controllers
 {
-    
+
     [ApiController]
     [Route("afk_services/afk_achivements")]
     public class AchivementsController(ILogger<LeaderboardController> logger, IUnitOfWork unitOfWork) : ControllerBase
@@ -15,27 +15,168 @@ namespace AFKAT_Servies.Controllers
         [Route("{achivementId}")]
         public IActionResult GetAchievement(int achivementId)
         {
-            var response = _unitOfWork.Achivementses.GetAchivementAsync(achivementId);
-            if (response.Result == null)
+            try
             {
-                return NotFound($"Achievement with ID {achivementId} not found.");
+                var response = _unitOfWork.Achivementses.GetAchivementAsync(achivementId);
+                if (response.Result.GameId == 0)
+                {
+                    return NotFound($"Achievement with ID {achivementId} not found.");
+                }
+
+                return Ok(new
+                {
+                    Id = response.Result.Id,
+                    GameId = response.Result.GameId,
+                    Name = response.Result.Name,
+                    Description = response.Result.Description,
+                    ImageUrl = response.Result.ImageUrl
+                });
             }
-            
-            return Ok(response.Result);
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error retrieving achievement with ID {AchivementId}", achivementId);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error retrieving achievement with ID {AchivementId}", achivementId);
+                return StatusCode(500, "An unexpected error occurred.");
+            }
         }
 
         [HttpGet]
         [Route("game/{gameId}/")]
-        public IActionResult GetAchievementById(int gameId,int page = 1, int pageSize = 20)
+        public IActionResult GetAchievementById(int gameId, int page = 1, int pageSize = 20)
         {
-            var response = _unitOfWork.Achivementses.GetAchivementsAsync(gameId, page, pageSize);
-            if (response.Result == null || !response.Result.Any())
+            try
             {
-                return NotFound("No achievements found for the specified game ID.");
+                var response = _unitOfWork.Achivementses.GetAchivementsAsync(gameId, page, pageSize);
+                if (response.Result.Count == 0)
+                {
+                    return NotFound("No achievements found for the specified game ID.");
+                }
+
+                return Ok(new 
+                {
+                    Id = response.Result.Select(x=> x.Id),
+                    GameId = response.Result.Select(x => x.GameId),
+                    Names = response.Result.Select(x => x.Name),
+                    Descriptions = response.Result.Select(x => x.Description),
+                    ImageUrls = response.Result.Select(x => x.ImageUrl),
+                });
             }
-            return Ok(response.Result);
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error retrieving achievements for game ID {GameId}", gameId);
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error retrieving achievements for game ID {GameId}", gameId);
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+            
         }
-        
+
+        [HttpPost]
+        [Route("")]
+        public IActionResult CreateAchievement([FromForm] AchivementsDTO achivementDto)
+        {
+            try
+            {
+                var response = _unitOfWork.Achivementses.CreateAchivementAsync(achivementDto, achivementDto.Image);
+                if (response.Result.GameId == 0)
+                {
+                    return BadRequest("Failed to create achievement.");
+                }
+                return CreatedAtAction(nameof(GetAchievement), new { achivementId = response.Result.Id }, response.Result);
+            }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex, "Error creating achievement");
+                return BadRequest("Achievement cannot be null.");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error creating achievement");
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Error creating achievement");
+                return BadRequest("Invalid operation: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error creating achievement");
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+        [HttpPut]
+        [Route("{achivementId}")]
+        public IActionResult UpdateAchievement(int achivementId, [FromForm] AchivementsDTO achivementDto)
+        {
+            try
+            {
+                if (achivementId != achivementDto.Id)
+                {
+                    return BadRequest("Achievement ID mismatch.");
+                }
+
+                var response = _unitOfWork.Achivementses.UpdateAchivementAsync(achivementDto, achivementDto.Image);
+                if (response.Result.GameId == 0)
+                {
+                    return NotFound($"Achievement with ID {achivementId} not found.");
+                }
+
+                return Ok(response.Result);
+            }
+            catch (ArgumentNullException ex)
+            {
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                return BadRequest("Achievement cannot be null.");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                return BadRequest("Invalid operation: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error updating achievement with ID {AchivementId}", achivementId);
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+        [HttpDelete]
+        [Route("{achivementId}")]
+        public IActionResult DeleteAchievement(int achivementId)
+        {
+            try
+            {
+                _unitOfWork.Achivementses.DeleteAchivementAsync(achivementId);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error deleting achievement with ID {AchivementId}", achivementId);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Achievement with ID {AchivementId} not found.", achivementId);
+                return NotFound($"Achievement with ID {achivementId} not found.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error deleting achievement with ID {AchivementId}", achivementId);
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
     }
 }
 

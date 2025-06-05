@@ -14,70 +14,154 @@ namespace AFKAT_Servies.Controllers
         [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult GetLeaderboard(int leaderboardId)
         {
-            var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardAsync(leaderboardId);
-            if (leaderboard == null)
+            try
             {
-                return NotFound($"Leaderboard with ID {leaderboardId} not found.");
+                var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardAsync(leaderboardId);
+                if (leaderboard == null)
+                {
+                    return NotFound($"Leaderboard with ID {leaderboardId} not found.");
+                }
+                return Ok(leaderboard.Result);
             }
-            return Ok(leaderboard.Result);
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error retrieving leaderboard with ID {LeaderboardId}", leaderboardId);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Leaderboard with ID {LeaderboardId} not found", leaderboardId);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving leaderboard with ID {LeaderboardId}", leaderboardId);
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
         [HttpGet]
         [Route("afk_leaderboard")]
         public IActionResult GetLeaderboards(int page = 1, int pageSize = 20)
         {
-            var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardsAsync(page, pageSize);
-            if (leaderboard == null || !leaderboard.Result.Any())
+            try
             {
-                return NotFound("No leaderboards found.");
-            }
+                var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardsAsync(page, pageSize);
+                if (leaderboard == null || !leaderboard.Result.Any())
+                {
+                    return NotFound("No leaderboards found.");
+                }
 
-            return Ok(new
+                return Ok(new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = leaderboard.Result.Count,
+                    Entries = leaderboard.Result
+                });
+            }
+            catch (ArgumentException ex)
             {
-                Page = page,
-                PageSize = pageSize,
-                TotalCount = leaderboard.Result.Count,
-                Entries = leaderboard.Result
-            });
+                _logger.LogError(ex, "Error retrieving leaderboards");
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "No leaderboards found");
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving leaderboards");
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("afk_leaderboard/game/{gameId}")]
         public IActionResult GetLeaderboardBygGames(int page,int pageSize,int gameId)
         {
-            var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardByGameIdAsync(gameId, page, pageSize);
-            if (leaderboard == null)
+            try
             {
-                return NotFound($"No leaderboards found for game ID {gameId}.");
+                var leaderboard = _unitOfWork.Leaderboards.GetLeaderboardByGameIdAsync(gameId, page, pageSize);
+                if (leaderboard == null)
+                {
+                    return NotFound($"No leaderboards found for game ID {gameId}.");
+                }
+
+                return Ok(new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = leaderboard.Result.Count,
+                    Entries = leaderboard.Result
+                });
             }
-            
-            return Ok(new
+            catch (ArgumentException ex)
             {
-                Page = page,
-                PageSize = pageSize,
-                TotalCount = leaderboard.Result.Count,
-                Entries = leaderboard.Result
-            });
+                _logger.LogError(ex, "Error retrieving leaderboards for game ID {GameId}", gameId);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "No leaderboards found for game ID {GameId}", gameId);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving leaderboards for game ID {GameId}", gameId);
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
         [HttpPost]
         [Route("afk_leaderboard")]
         public IActionResult CreateLeaderboard([FromBody] LeaderboardDTO leaderboardDto)
         {
-            var response = _unitOfWork.Leaderboards.CreateLeaderboardAsync(leaderboardDto);
-            if (response == null)
+            try
             {
-                return BadRequest("Failed to create leaderboard.");
+                var response = _unitOfWork.Leaderboards.CreateLeaderboardAsync(leaderboardDto);
+                if (response == null)
+                {
+                    return BadRequest("Failed to create leaderboard.");
+                }
+                return CreatedAtAction(nameof(GetLeaderboard), new { leaderboardId = response.Result.Id }, response.Result);
             }
-            return CreatedAtAction(nameof(GetLeaderboard), new { leaderboardId = response.Result.Id }, response.Result);
+            catch (InvalidOperationException e)
+            {
+                _logger.LogError(e, "Invalid operation while creating leaderboard");
+                return BadRequest("Invalid operation: " + e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred while creating leaderboard");
+                return StatusCode(500, "Internal server error: " + e.Message);
+            }
         }
         [HttpPut]
         [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult UpdateLeaderboard([FromBody] LeaderboardDTO leaderboardDto)
         {
-            var response = _unitOfWork.Leaderboards.UpdateLeaderboardAsync(leaderboardDto);
-            
-            if (response == null)
+            try
             {
-                return NotFound("Leaderboard not found or update failed.");
+                var response = _unitOfWork.Leaderboards.UpdateLeaderboardAsync(leaderboardDto);
+                if (response == null)
+                {
+                    return NotFound("Leaderboard not found or update failed.");
+                }
+            }
+            catch (ArgumentException e)
+            {
+                _logger.LogError(e, "Invalid argument while updating leaderboard");
+                return BadRequest("Invalid argument: " + e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogError(e, "Invalid operation while updating leaderboard");
+                return BadRequest("Invalid operation: " + e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred while updating leaderboard");
+                return StatusCode(500, "Internal server error: " + e.Message);
             }
             
             return NoContent();
@@ -86,14 +170,31 @@ namespace AFKAT_Servies.Controllers
         [Route("afk_leaderboard/{leaderboardId}")]
         public IActionResult DeleteLeaderboard(int leaderboardId)
         {
-            var response = _unitOfWork.Leaderboards.DeleteLeaderboardAsync(leaderboardId);
-            
-            if (response == null)
+            try
             {
-                return NotFound($"Leaderboard with ID {leaderboardId} not found.");
+                var response = _unitOfWork.Leaderboards.DeleteLeaderboardAsync(leaderboardId);
+                if (response == null)
+                {
+                    return NotFound($"Leaderboard with ID {leaderboardId} not found.");
+                }
+                
+                return NoContent();
             }
-            
-            return NoContent();
+            catch (ArgumentException e)
+            {
+                _logger.LogError(e, "Invalid argument while deleting leaderboard");
+                return BadRequest("Invalid argument: " + e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                _logger.LogError(e, "Invalid leaderboard id");
+                return NotFound("Leaderboard not found: " + e.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting leaderboard with ID {LeaderboardId}", leaderboardId);
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
 	}
 }

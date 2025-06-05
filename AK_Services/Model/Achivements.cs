@@ -8,6 +8,7 @@ namespace AFKAT_Servies
     public class Achivements : BaseModel
 	{
 		[Required]
+		[Supabase.Postgrest.Attributes.PrimaryKey("Id", false)]
 		public int Id { get; set; }
 		[Required]
 		public int GameId { get; set; }

@@ -11,13 +11,15 @@ public class UnitOfWork : IUnitOfWork
     public ILeaderboardEntriesService LeaderboardEntries { get; }
     
     private readonly Client _supabaseClient;
+    private readonly IFileService _fileService;
 
-    public UnitOfWork(Supabase.Client client)
+    public UnitOfWork(Supabase.Client client, IFileService fileService)
     {
         _supabaseClient = client;
-
+        _fileService = fileService;
+        
         LeaderboardEntries = new LeaderboardEntriesService(_supabaseClient);
-        Achivementses = new AchivementsService(_supabaseClient);
+        Achivementses = new AchivementsService(_supabaseClient, _fileService);
         Leaderboards = new LeaderboardService(_supabaseClient);
     }
     
