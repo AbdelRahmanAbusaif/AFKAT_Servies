@@ -25,7 +25,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // 				{
 // 					var siginKey = new SymmetricSecurityKey(
 // 						Encoding.UTF8.GetBytes("django-insecure-@7p$+s+@)&hm)5x37nd+7d^z-k&)&nm3^je4-^5*atg2cmld"));
-					
+
 // 					options.TokenValidationParameters = new TokenValidationParameters
 // 					{
 // 						ValidateIssuerSigningKey = true,
@@ -59,6 +59,8 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // 					};
 // 				});
 
+
+
 // Register UnitOfWork and services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -85,6 +87,25 @@ options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
 }));
 
 
+// Register services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers().AddNewtonsoftJson();
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowSpecificOrigin", policy =>
+	{
+		policy
+			.AllowAnyOrigin()
+			.AllowAnyHeader()
+			.AllowAnyMethod();
+	});
+});
+
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -92,8 +113,12 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-// app.UseAuthorization();
+// Enable CORS here
+app.UseCors("AllowSpecificOrigin");
+
+// Enable authentication & authorization (if needed)
 // app.UseAuthentication();
+// app.UseAuthorization();
 
 app.MapControllers();
 

@@ -12,7 +12,7 @@ public class PlayerSavesController(ILogger<PlayerAchievementController> logger ,
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     
     [HttpGet]
-    [Route("player/{playerId}/game/{gameId}/filsename/{fileName}")]
+    [Route("player/{playerId}/game/{gameId}/filename/{fileName}")]
     public async Task<IActionResult> GetPlayerSaves(int playerId, int gameId , string fileName)
     {
         try

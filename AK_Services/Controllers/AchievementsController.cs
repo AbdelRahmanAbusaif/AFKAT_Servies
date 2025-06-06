@@ -58,11 +58,17 @@ namespace AFKAT_Servies.Controllers
 
                 return Ok(new 
                 {
-                    Id = response.Result.Select(x=> x.Id),
-                    GameId = response.Result.Select(x => x.GameId),
-                    Names = response.Result.Select(x => x.Name),
-                    Descriptions = response.Result.Select(x => x.Description),
-                    ImageUrls = response.Result.Select(x => x.ImageUrl),
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = response.Result.Count,
+                    Achievements = response.Result.Select(a => new 
+                    {
+                        Id = a.Id,
+                        GameId = a.GameId,
+                        Name = a.Name,
+                        Description = a.Description,
+                        ImageUrl = a.ImageUrl
+                    }).ToList()
                 });
             }
             catch (ArgumentException ex)
