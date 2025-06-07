@@ -46,21 +46,21 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
         return Task.FromResult(achivements);
     }
 
-    public Task<AchivementsDTO> GetAchivementAsync(int gameId)
+    public Task<AchivementsDTO> GetAchivementAsync(int achievementId)
     {
-        if (gameId <= 0)
+        if (achievementId <= 0)
         {
-            throw new ArgumentException("Invalid game ID", nameof(gameId));
+            throw new ArgumentException("Invalid Achievement ID", nameof(achievementId));
         }
 
         var response = _supabaseClient.From<Achievements>()
             .Select("*")
-            .Where(x => x.GameId == gameId)
+            .Where(x => x.Id == achievementId)
             .Get();
 
         if (response.Result.Model == null)
         {
-            throw new ArgumentException($"No achivement found for game ID {gameId}.");
+            throw new ArgumentException($"No achievement found for  {achievementId}.");
         }
 
         AchivementsDTO achivement = new()
@@ -142,7 +142,9 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
 
         if (file != null)
         {
-            fileService.DeleteFileAsync(existingAchivement.Result.Model.AchivementIconURL);
+            string fileName = Path.GetFileName(existingAchivement.Result.Model.AchivementIconURL);
+            Console.WriteLine("File is not null, updating achivement icon URL. with URL: " + existingAchivement.Result.Model.AchivementIconURL);
+            fileService.DeleteFileAsync(fileName);
             existingAchivement.Result.Model.AchivementIconURL = _fileService.SaveFileAsync(file).Result;
         }
 
@@ -185,8 +187,9 @@ public class AchivementsService(Client client,IFileService fileService) : IAchiv
         var response = _supabaseClient.From<Achievements>()
             .Where(x => x.Id == id)
             .Delete();
-
-        fileService.DeleteFileAsync(existingAchivement.Result.Model.AchivementIconURL).Wait();
+        
+        string fileName = Path.GetFileName(existingAchivement.Result.Model.AchivementIconURL);
+        fileService.DeleteFileAsync(fileName).Wait();
         
         return Task.FromResult(true);
     }

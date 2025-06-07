@@ -22,7 +22,7 @@ public class PlayerAchievementController(ILogger<PlayerAchievementController> lo
             {
                 return NotFound($"No achievements found for player ID {playerId}.");
             }
-
+            
             return Ok(new
             {
                 Page = page,
@@ -142,27 +142,27 @@ public class PlayerAchievementController(ILogger<PlayerAchievementController> lo
         }
     }
     [HttpPut]
-    [Route("{playerAchievementId}")]
-    public IActionResult UpdatePlayerAchievement(int playerAchievementId, [FromBody] PlayerAchievementDTO playerAchievement)
+    [Route("")]
+    public IActionResult UpdatePlayerAchievement([FromBody] PlayerAchievementDTO playerAchievement)
     {
         try
         {
-            var response = _unitOfWork.PlayerAchievements.UpdatePlayerAchievementAsync(playerAchievementId, playerAchievement);
+            var response = _unitOfWork.PlayerAchievements.UpdatePlayerAchievementAsync(playerAchievement);
             return Ok(response.Result);
         }
         catch (ArgumentException ex)
         {
-            _logger.LogError(ex, "Error updating player achievement with ID {Id}", playerAchievementId);
+            _logger.LogError(ex, "Error updating player achievement");
             return BadRequest(ex.Message);
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogError(ex, "No achievement found with ID {Id}", playerAchievementId);
+            _logger.LogError(ex, "No achievement found");
             return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error updating player achievement with ID {Id}", playerAchievementId);
+            _logger.LogError(ex, "Unexpected error updating player achievement");
             return StatusCode(500, "An unexpected error occurred.");
         }
     }

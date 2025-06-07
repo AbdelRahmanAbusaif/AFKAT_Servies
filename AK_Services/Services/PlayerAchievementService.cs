@@ -2,6 +2,7 @@
 using AFKAT_Servies;
 using AK_Services.DTOS;
 using AK_Services.Interfaces;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Supabase;
 
 public class PlayerAchievementService(Client supabaseClient, IFileService fileService) : IPlayerAchievementService
@@ -34,19 +35,45 @@ public class PlayerAchievementService(Client supabaseClient, IFileService fileSe
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
+        
+        List<Achievements> achievements = new();
+        
+        foreach (var achievement in pagedAchievements)
+        {
+            var achievementResponse = _supabaseClient.From<Achievements>()
+                .Select("*")
+                .Where(x => x.Id == achievement.AchievementId)
+                .Get();
 
+            if (achievementResponse.Result.Model != null)
+            {
+                achievements.Add(achievementResponse.Result.Model);
+            }
+            else
+            {
+                throw new KeyNotFoundException($"No achievement found with ID {achievement.AchievementId}.");
+            }
+        }
+        
         List<PlayerAchievementDTO> playerAchievements = pagedAchievements
             .Select(x => new PlayerAchievementDTO
             {
+                Id = x.Id,
                 PlayerId = x.PlayerId,
                 GameId = x.GameId,
                 AchievementId = x.AchievementId,
+                AchievementName = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementName ?? "Unknown Achievement",
+                AchievementDescription = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementDescription ?? "No description available",
                 DateAchieved = x.UnlockedAt,
                 AchievementIconURL = x.AchievementIconURL,
                 IsCompleted = x.UnlockedAt.Date != DateTime.MinValue
             })
             .ToList();
-
+        
+        playerAchievements = playerAchievements
+            .OrderByDescending(x => x.IsCompleted)
+            .ToList();
+        
         return Task.FromResult(playerAchievements);
     }
 
@@ -79,17 +106,43 @@ public class PlayerAchievementService(Client supabaseClient, IFileService fileSe
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
+        
+        List<Achievements> achievements = new();
+        
+        foreach (var achievement in pagedAchievements)
+        {
+            var achievementResponse = _supabaseClient.From<Achievements>()
+                .Select("*")
+                .Where(x => x.Id == achievement.AchievementId)
+                .Get();
 
+            if (achievementResponse.Result.Model != null)
+            {
+                achievements.Add(achievementResponse.Result.Model);
+            }
+            else
+            {
+                throw new KeyNotFoundException($"No achievement found with ID {achievement.AchievementId}.");
+            }
+        }
+        
         List<PlayerAchievementDTO> playerAchievements = pagedAchievements
             .Select(x => new PlayerAchievementDTO
             {
+                Id = x.Id,
                 PlayerId = x.PlayerId,
                 GameId = x.GameId,
                 AchievementId = x.AchievementId,
+                AchievementName = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementName ?? "Unknown Achievement",
+                AchievementDescription = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementDescription ?? "No description available",
                 DateAchieved = x.UnlockedAt ,
                 AchievementIconURL = x.AchievementIconURL,
                 IsCompleted = x.UnlockedAt.Date != DateTime.MinValue
             })
+            .ToList();
+        
+        playerAchievements = playerAchievements
+            .OrderByDescending(x => x.IsCompleted)
             .ToList();
 
         return Task.FromResult(playerAchievements);
@@ -117,16 +170,42 @@ public class PlayerAchievementService(Client supabaseClient, IFileService fileSe
             .Take(pageSize)
             .ToList();
         
+        List<Achievements> achievements = new();
+        
+        foreach (var achievement in pgaeModel)
+        {
+            var achievementResponse = _supabaseClient.From<Achievements>()
+                .Select("*")
+                .Where(x => x.Id == achievement.AchievementId)
+                .Get();
+
+            if (achievementResponse.Result.Model != null)
+            {
+                achievements.Add(achievementResponse.Result.Model);
+            }
+            else
+            {
+                throw new KeyNotFoundException($"No achievement found with ID {achievement.AchievementId}.");
+            }
+        }
+        
         List<PlayerAchievementDTO> playerAchievements = pgaeModel
             .Select(x => new PlayerAchievementDTO
             {
+                Id = id,
                 PlayerId = x.PlayerId,
                 GameId = x.GameId,
                 AchievementId = x.AchievementId,
+                AchievementName = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementName ?? "Unknown Achievement",
+                AchievementDescription = achievements.FirstOrDefault(a => a.Id == x.AchievementId)?.AchivementDescription ?? "No description available",
                 DateAchieved = x.UnlockedAt,
                 AchievementIconURL = x.AchievementIconURL,
                 IsCompleted = x.UnlockedAt.Date != DateTime.MinValue
             })
+            .ToList();
+        
+        playerAchievements = playerAchievements
+            .OrderByDescending(x => x.IsCompleted)
             .ToList();
         
         return Task.FromResult(playerAchievements);
@@ -170,13 +249,8 @@ public class PlayerAchievementService(Client supabaseClient, IFileService fileSe
         return Task.FromResult(response.Result.Model);
     }
 
-    public Task<PlayerAchievement> UpdatePlayerAchievementAsync(int id, PlayerAchievementDTO playerAchievement)
+    public Task<PlayerAchievement> UpdatePlayerAchievementAsync(PlayerAchievementDTO playerAchievement)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentException("Achievement ID must be greater than zero.", nameof(id));
-        }
-
         if (playerAchievement == null)
         {
             throw new ArgumentNullException(nameof(playerAchievement), "Player achievement cannot be null.");
@@ -184,12 +258,12 @@ public class PlayerAchievementService(Client supabaseClient, IFileService fileSe
 
         var existingAchievementResponse = _supabaseClient.From<PlayerAchievement>()
             .Select("*")
-            .Where(x => x.Id == id)
+            .Where(x => x.AchievementId == playerAchievement.AchievementId)
             .Get();
 
         if (existingAchievementResponse.Result.Model == null)
         {
-            throw new KeyNotFoundException($"No achievement found with ID {id}.");
+            throw new KeyNotFoundException($"No achievement found.");
         }
 
         var existingAchievement = existingAchievementResponse.Result.Model;

@@ -119,42 +119,37 @@ namespace AFKAT_Servies.Controllers
             }
         }
         [HttpPut]
-        [Route("{achivementId}")]
-        public IActionResult UpdateAchievement(int achivementId, [FromForm] AchivementsDTO achivementDto)
+        [Route("")]
+        public IActionResult UpdateAchievement([FromForm] AchivementsDTO achivementDto)
         {
             try
             {
-                if (achivementId != achivementDto.Id)
-                {
-                    return BadRequest("Achievement ID mismatch.");
-                }
-
                 var response = _unitOfWork.Achivementses.UpdateAchivementAsync(achivementDto, achivementDto.Image);
                 if (response.Result.GameId == 0)
                 {
-                    return NotFound($"Achievement with ID {achivementId} not found.");
+                    return NotFound($"Achievement with ID not found.");
                 }
 
                 return Ok(response.Result);
             }
             catch (ArgumentNullException ex)
             {
-                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementDto.Id);
                 return BadRequest("Achievement cannot be null.");
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId} ", achivementDto.Id);
                 return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementId);
+                _logger.LogError(ex, "Error updating achievement with ID {AchivementId}", achivementDto.Id);
                 return BadRequest("Invalid operation: " + ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error updating achievement with ID {AchivementId}", achivementId);
+                _logger.LogError(ex, "Unexpected error updating achievement with ID {AchivementId}", achivementDto.Id);
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }
