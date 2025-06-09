@@ -29,7 +29,7 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-        
+
         List<LeaderboardEntryDTO> leaderboardEntries = pagedEntries
             .Select((x, index) => new LeaderboardEntryDTO
             {
@@ -39,10 +39,21 @@ public class LeaderboardEntriesService(Supabase.Client client) : ILeaderboardEnt
                 Score = x.Score
             })
             .ToList();
-        
+
         if (leaderboardEntries == null || leaderboardEntries.Count == 0)
         {
             throw new KeyNotFoundException($"No leaderboard entries found for leaderboard ID {leaderboardId}.");
+        }
+
+        // Sort the entries by score in descending order
+        leaderboardEntries = leaderboardEntries
+            .OrderByDescending(x => x.Score)
+            .ToList();
+
+        // Assign ranks based on the sorted order
+        for (int i = 0; i < leaderboardEntries.Count; i++)
+        {
+            leaderboardEntries[i].Rank = i + 1;
         }
 
         return Task.FromResult(leaderboardEntries);
